@@ -1,0 +1,6 @@
+version: 1.0
+shards:
+  zeromq:
+    github: cuckookernel/zeromq-crystal
+    commit: d6d25ace3376aa0f36a6432ed88d35930d3640fb
+

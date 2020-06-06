@@ -1,0 +1,17 @@
+name: alclonia-demon
+version: 0.1.0
+
+authors:
+  - Teo Restrepo <mateini@gmail.com>
+
+targets:
+  alclonia-demon:
+    main: src/alclonia-demon.cr
+
+crystal: 0.34.0
+
+dependencies:
+  zeromq:
+    github: cuckookernel/zeromq-crystal
+
+license: MIT

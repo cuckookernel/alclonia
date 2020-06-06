@@ -1,6 +1,7 @@
 
 class CollectionCfg
     property :id_field, :text_fields, :numeric_fields, :facet_fields
+
     def initialize(@id_field : String,
                    @text_fields : Array(String),
                    @numeric_fields : Array(String),

@@ -1,19 +1,40 @@
 
+require "./core"
+require "./numeric_idx"
+require "./util"
 
 class Collection
     property :items
+
+    # mapping an item id to its content
     @items = Hash(Id, Item).new
-    @text_index = Idx.new { |h, k| Set(Id).new }
-    @facet_indexes = Hash( String, Idx ).new { | h, k |
-          Idx.new { |h2, k2|
-            Set(Id).new
-          }
-    }
+
+    # mapping of term -> Set(Id) = { document ids that contain term in any of the text fields}
+    @term_index = Idx.new { |term, _k | FilterResult.new }
+
+    # @facet_indexes[fld][val] will contain the set of document ids which
+    # contain value `val` in field `fld`
+    @facet_indexes = Hash( FldName, Idx ).new
+    @numeric_indexes = Hash( FldName, NumericIdx ).new
+
+    @all_fields : Set(FldName)
 
     def initialize(@cfg : CollectionCfg)
+      @cfg.facet_fields.map { |fld|
+        @facet_indexes[fld] = Idx.new { |val, _id| FilterResult.new }
+      }
+
+      @cfg.numeric_fields.map { |fld| @numeric_indexes[fld] = NumericIdx.new }
+
+      @all_fields = @cfg.facet_fields.to_set + @cfg.numeric_fields.to_set + @cfg.text_fields.to_set
     end
 
+    # whether the named field is a facet field
+    def is_facet(@fld : FieldName) : Bool
+      @facet_indexes.has_key?( fld )
+    end
 
+    # populate collection from a file in which each line is a separate json
     def populate_from_file( fp : String )
       file_size = File.size(fp)
       puts "reading json lines from #{fp} (#{file_size} bytes)"
@@ -30,6 +51,7 @@ class Collection
              " #{file_size / @items.size} bytes/item" )
     end
 
+
     def add_one_from_json( line : String )
       obj = Hash(String, JSON::Any).from_json( line )
       item = Item.new( obj, line )
@@ -41,10 +63,9 @@ class Collection
         val = obj[fld]?
 
         unless val.nil?
-          toks = tokenize( val.as_s )
-          toks.map { |tok|
-            @text_index[ tok ].add( id )
-
+          terms = Util.tokenize( val.as_s )
+          terms.map { |term|
+            @term_index[ term ].add( id )
           }
         end
       }

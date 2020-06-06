@@ -1,10 +1,13 @@
 # TODO: Write documentation for `Alclonia::Demon`
+# TODO: Implement Numeric Index
 
 require "zeromq"
 require "json"
 
+require "./core"
 require "./collection_cfg"
 require "./collection"
+require "./util"
 
 module AlcloniaDemon
 
@@ -13,24 +16,6 @@ module AlcloniaDemon
 
 end
 
-alias Msg = Hash(String, String)
-alias Id = Int64
-alias Idx = Hash(String, Set(Id))
-
-class Item
-  property :rec, :raw
-  @is_deleted: Bool = false
-
-  def initialize(@rec : Hash(String, JSON::Any), @raw : String )
-    #  @rec: JSON:: # = JSON.parse("{\"a\": 0}")
-  end
-end
-
-
-
-def tokenize( a : String ) : Array(String)
-  a.split(" ").map { |w| w.downcase }
-end
 
 
 def start_demon
